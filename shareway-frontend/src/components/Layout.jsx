@@ -19,6 +19,8 @@ export default function Layout() {
         background: isActive ? "#eee" : "transparent",
     });
 
+    const isAdmin = user?.role === "ADMIN";
+
     return (
         <div className="container">
             <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
@@ -26,8 +28,8 @@ export default function Layout() {
                 <nav className="nav-buttons">
                     <NavLink to="/dashboard" style={linkStyle}>Dashboard</NavLink>
                     <NavLink to="/trips" style={linkStyle}>{t.navTrips}</NavLink>
-                    <NavLink to="/users" style={linkStyle}>{t.navUsers}</NavLink>
-                    <NavLink to="/reservations" style={linkStyle}>{t.navReservations}</NavLink>
+                    {isAdmin && <NavLink to="/users" style={linkStyle}>{t.navUsers}</NavLink>}
+                    {isAdmin && <NavLink to="/reservations" style={linkStyle}>{t.navReservations}</NavLink>}
                 </nav>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                     {user && (
