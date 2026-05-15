@@ -1,0 +1,47 @@
+# BACKEND (Spring Boot)
+
+# Compilación / ejecución
+eventia-backend/target/
+eventia-backend/logs/
+eventia-backend/out/
+eventia-backend/build/
+
+# Variables de entorno
+eventia-backend/.env
+eventia-backend/.env.*
+
+# IntelliJ / IDE
+eventia-backend/.idea/
+eventia-backend/*.iml
+eventia-backend/.classpath
+eventia-backend/.project
+eventia-backend/.settings/
+
+
+# FRONTEND (React / Vite)
+
+# Dependencias / build
+eventia-frontend/node_modules/
+eventia-frontend/dist/
+eventia-frontend/.vite/
+eventia-frontend/coverage/
+eventia-frontend/.cache/
+
+# Variables de entorno
+eventia-frontend/.env
+eventia-frontend/.env.*
+
+# IDE
+eventia-frontend/.idea/
+eventia-frontend/*.iml
+
+
+# SISTEMA
+
+*.log
+.DS_Store
+Thumbs.db
+
+
+.idea/
+*.iml
