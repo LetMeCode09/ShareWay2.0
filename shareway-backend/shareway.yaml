@@ -1,0 +1,761 @@
+openapi: 3.0.1
+info:
+  title: ShareWay
+  description: REST API for managing trips, users and reservations in the ShareWay
+    carpooling application.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /trips:
+    get:
+      summary: List all trips
+      description: Returns a list with all available trips.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trip'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    post:
+      summary: Create a trip
+      description: Creates a new trip.
+      requestBody:
+        description: Trip data to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripInDto'
+      responses:
+        '200':
+          description: Trip created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /trips/{id}:
+    get:
+      summary: Get a trip by id
+      description: Returns a single trip by its id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Trip id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '404':
+          description: Trip not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    put:
+      summary: Update a trip
+      description: Updates an existing trip by id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Trip id.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Updated trip data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripInDto'
+      responses:
+        '200':
+          description: Trip updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Trip not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    delete:
+      summary: Delete a trip
+      description: Deletes a trip by id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Trip id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Trip deleted
+        '404':
+          description: Trip not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /users:
+    get:
+      summary: List all users
+      description: Returns a list with all registered users.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    post:
+      summary: Create a user
+      description: Registers a new user.
+      requestBody:
+        description: User data to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInDto'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /users/{id}:
+    get:
+      summary: Get a user by id
+      description: Returns a single user by its id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    put:
+      summary: Update a user
+      description: Updates an existing user by id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User id.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Updated user data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInDto'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    delete:
+      summary: Delete a user
+      description: Deletes a user by id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: User deleted
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /users/email/{email}:
+    get:
+      summary: Get a user by email
+      description: Returns a single user by its email address.
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: User email.
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /users/search:
+    get:
+      summary: Search users by name
+      description: Returns a list of users whose name contains the provided text (case-insensitive).
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: Text to search in user names.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /reservations:
+    get:
+      summary: List all reservations
+      description: Returns a list with all reservations.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    post:
+      summary: Create a reservation
+      description: Creates a new reservation for a given user and trip.
+      requestBody:
+        description: Reservation data to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationInDto'
+      responses:
+        '200':
+          description: Reservation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+  /reservations/{id}:
+    get:
+      summary: Get a reservation by id
+      description: Returns a single reservation by its id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reservation id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    put:
+      summary: Update a reservation
+      description: Updates an existing reservation by id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reservation id.
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Updated reservation data.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationInDto'
+      responses:
+        '200':
+          description: Reservation updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '404':
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+    delete:
+      summary: Delete a reservation
+      description: Deletes a reservation by id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reservation id.
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Reservation deleted
+        '404':
+          description: Reservation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+components:
+  schemas:
+    TripInDto:
+      type: object
+      properties:
+        origin:
+          type: string
+          description: Trip origin location.
+        destination:
+          type: string
+          description: Trip destination location.
+        dateTime:
+          type: string
+          format: date-time
+          description: Date and time of the trip.
+        transportTypes:
+          type: string
+          description: Transport type(s) used for the trip.
+        availableSeats:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Number of available seats.
+        price:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Price per seat (or total trip price depending on business rules).
+        full:
+          type: boolean
+          description: Indicates whether the trip is full.
+      required:
+        - origin
+        - destination
+        - dateTime
+      example:
+        origin: Zaragoza
+        destination: Huesca
+        dateTime: '2026-02-20T10:30:00'
+        transportTypes: car
+        availableSeats: 3
+        price: 10
+        full: false
+    Trip:
+      allOf:
+        - $ref: '#/components/schemas/TripInDto'
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique trip identifier.
+      example:
+        id: 1
+        origin: Zaragoza
+        destination: Huesca
+        dateTime: '2026-02-20T10:30:00'
+        transportTypes: car
+        availableSeats: 3
+        price: 10
+        full: false
+    UserInDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: User full name.
+        email:
+          type: string
+          format: email
+          description: User email address.
+        phone:
+          type: string
+          description: User phone number (digits only, min 9).
+        registrationDate:
+          type: string
+          format: date
+          description: User registration date.
+        stars:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 5
+          description: User rating from 0 to 5.
+        verified:
+          type: boolean
+          description: Whether the user is verified.
+      required:
+        - name
+        - email
+        - phone
+        - registrationDate
+      example:
+        name: Lucia Perez
+        email: lucia@example.com
+        phone: '612345678'
+        registrationDate: '2026-02-07'
+        stars: 5
+        verified: false
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserInDto'
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique user identifier.
+      example:
+        id: 1
+        name: Lucia Perez
+        email: lucia@example.com
+        phone: '612345678'
+        registrationDate: '2026-02-07'
+        stars: 5
+        verified: false
+    UserRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: User id.
+      required:
+        - id
+      example:
+        id: 1
+    TripRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Trip id.
+      required:
+        - id
+      example:
+        id: 1
+    ReservationInDto:
+      type: object
+      properties:
+        numberOfSeats:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Number of seats reserved.
+        reservationDate:
+          type: string
+          format: date-time
+          description: Reservation date and time.
+        confirmed:
+          type: boolean
+          description: Whether the reservation is confirmed.
+        comment:
+          type: string
+          description: Optional comment for the reservation.
+        totalPrice:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Total price of the reservation.
+        user:
+          $ref: '#/components/schemas/UserRef'
+        trip:
+          $ref: '#/components/schemas/TripRef'
+      required:
+        - numberOfSeats
+        - reservationDate
+      example:
+        numberOfSeats: 2
+        reservationDate: '2026-02-07T11:00:00'
+        confirmed: true
+        comment: I will be at the main station.
+        totalPrice: 20
+        user:
+          id: 1
+        trip:
+          id: 1
+    Reservation:
+      allOf:
+        - $ref: '#/components/schemas/ReservationInDto'
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique reservation identifier.
+      example:
+        id: 1
+        numberOfSeats: 2
+        reservationDate: '2026-02-07T11:00:00'
+        confirmed: true
+        comment: I will be at the main station.
+        totalPrice: 20
+        user:
+          id: 1
+        trip:
+          id: 1
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp.
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code.
+        error:
+          type: string
+          description: Short error label.
+        message:
+          type: string
+          description: Detailed error message.
+      example:
+        timestamp: '2026-02-07T11:30:00'
+        status: 400
+        error: Bad Request
+        message: Validation error
+    InternalServerError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+      example:
+        timestamp: '2026-02-07T11:30:00'
+        status: 500
+        error: Internal error
+        message: Internal server error
+    BadRequest:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+      example:
+        timestamp: '2026-02-07T11:30:00'
+        status: 400
+        error: Bad Request
+        message: Validation error
+    NotFound:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+      example:
+        timestamp: '2026-02-07T11:30:00'
+        status: 404
+        error: Not Found
+        message: Resource not found
