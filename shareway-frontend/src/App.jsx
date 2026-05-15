@@ -1,5 +1,12 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+
+function AdminRoute({ children }) {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/login" replace />;
+    if (user.role !== "ADMIN") return <Navigate to="/dashboard" replace />;
+    return children;
+}
 import Layout from "./components/Layout.jsx";
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
@@ -45,17 +52,17 @@ export default function App() {
                 <Route path="/trips/:id"      element={<TripDetails />} />
                 <Route path="/trips/:id/edit" element={<TripForm mode="edit" />} />
 
-                {/* Users */}
-                <Route path="/users"          element={<UserList />} />
-                <Route path="/users/new"      element={<UserForm mode="create" />} />
-                <Route path="/users/:id"      element={<UserDetails />} />
-                <Route path="/users/:id/edit" element={<UserForm mode="edit" />} />
+                {/* Users — solo ADMIN */}
+                <Route path="/users"          element={<AdminRoute><UserList /></AdminRoute>} />
+                <Route path="/users/new"      element={<AdminRoute><UserForm mode="create" /></AdminRoute>} />
+                <Route path="/users/:id"      element={<AdminRoute><UserDetails /></AdminRoute>} />
+                <Route path="/users/:id/edit" element={<AdminRoute><UserForm mode="edit" /></AdminRoute>} />
 
-                {/* Reservations */}
-                <Route path="/reservations"          element={<ReservationList />} />
-                <Route path="/reservations/new"      element={<ReservationForm mode="create" />} />
-                <Route path="/reservations/:id"      element={<ReservationDetails />} />
-                <Route path="/reservations/:id/edit" element={<ReservationForm mode="edit" />} />
+                {/* Reservations — solo ADMIN */}
+                <Route path="/reservations"          element={<AdminRoute><ReservationList /></AdminRoute>} />
+                <Route path="/reservations/new"      element={<AdminRoute><ReservationForm mode="create" /></AdminRoute>} />
+                <Route path="/reservations/:id"      element={<AdminRoute><ReservationDetails /></AdminRoute>} />
+                <Route path="/reservations/:id/edit" element={<AdminRoute><ReservationForm mode="edit" /></AdminRoute>} />
 
                 <Route path="*" element={<div>Not found</div>} />
             </Route>
