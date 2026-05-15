@@ -39,7 +39,7 @@ public class Trip {
     @Min(value = 0, message = "price cannot be negative")
     @Column(name= "prices")
     private Integer price;
-    @Column
+    @Column(name = "is_full")
     private Boolean full;
 
     @JsonIgnoreProperties({"reservations"})
