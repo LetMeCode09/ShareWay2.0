@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getTrips } from "../../api/tripsApi";
 import { getUsers } from "../../api/usersApi";
 import { getReservations } from "../../api/reservationsApi";
@@ -14,19 +15,11 @@ export default function Dashboard() {
 // ── ADMIN ──────────────────────────────────────────────────────────────────
 
 function AdminDashboard() {
-    const [trips, setTrips]             = useState([]);
-    const [users, setUsers]             = useState([]);
+    const [trips, setTrips]               = useState([]);
+    const [users, setUsers]               = useState([]);
     const [reservations, setReservations] = useState([]);
-    const [status, setStatus]           = useState("idle");
-    const [error, setError]             = useState(null);
-
-    const [q, setQ]               = useState("");
-    const [dateFrom, setDateFrom] = useState("");
-    const [dateTo, setDateTo]     = useState("");
-    const [onlyConfirmed, setOnlyConfirmed] = useState(false);
-
-    const [sortCol, setSortCol] = useState("reservationDate");
-    const [sortDir, setSortDir] = useState("desc");
+    const [status, setStatus]             = useState("idle");
+    const [error, setError]               = useState(null);
 
     async function load() {
         try {
@@ -46,59 +39,43 @@ function AdminDashboard() {
     useEffect(() => { load(); }, []);
 
     const stats = useMemo(() => {
-        const confirmed  = reservations.filter(r => r.confirmed);
-        const totalPrice = reservations.reduce((acc, r) => acc + (r.totalPrice ?? 0), 0);
-        return {
-            totalTrips:            trips.length,
-            totalUsers:            users.length,
-            totalReservations:     reservations.length,
-            confirmedReservations: confirmed.length,
-            avgPrice: reservations.length ? Math.round(totalPrice / reservations.length) : 0,
-        };
+        const confirmed = reservations.filter(r => r.confirmed);
+        const pending   = reservations.filter(r => !r.confirmed);
+        const available = trips.filter(t => !t.full);
+        const full      = trips.filter(t => t.full);
+        const revenue   = reservations.reduce((acc, r) => acc + (r.totalPrice ?? 0), 0);
+        return { confirmed, pending, available, full, revenue };
     }, [trips, users, reservations]);
 
-    const tableData = useMemo(() => {
-        const text = q.trim().toLowerCase();
-        let list = reservations.map(r => ({
-            ...r,
-            userName:  r.user?.name  ?? `User #${r.user?.id  ?? "?"}`,
-            tripLabel: r.trip
-                ? `${r.trip.origin ?? "?"} → ${r.trip.destination ?? "?"}`
-                : `Trip #${r.tripId ?? "?"}`,
-        }));
+    const recentReservations = useMemo(() =>
+        [...reservations]
+            .map(r => ({
+                ...r,
+                userName:  r.user?.name  ?? `User #${r.user?.id ?? "?"}`,
+                tripLabel: r.trip
+                    ? `${r.trip.origin ?? "?"} → ${r.trip.destination ?? "?"}`
+                    : "—",
+            }))
+            .sort((a, b) => String(b.reservationDate).localeCompare(String(a.reservationDate)))
+            .slice(0, 10),
+        [reservations]
+    );
 
-        if (text) {
-            list = list.filter(r =>
-                [r.userName, r.tripLabel, String(r.totalPrice), String(r.numberOfSeats), r.comment]
-                    .filter(Boolean).join(" ").toLowerCase().includes(text)
-            );
-        }
-        if (dateFrom) list = list.filter(r => r.reservationDate && String(r.reservationDate) >= dateFrom);
-        if (dateTo)   list = list.filter(r => r.reservationDate && String(r.reservationDate) <= dateTo);
-        if (onlyConfirmed) list = list.filter(r => r.confirmed);
-
-        list.sort((a, b) => {
-            const va = a[sortCol] ?? "";
-            const vb = b[sortCol] ?? "";
-            if (va < vb) return sortDir === "asc" ? -1 : 1;
-            if (va > vb) return sortDir === "asc" ? 1  : -1;
-            return 0;
-        });
-        return list;
-    }, [reservations, q, dateFrom, dateTo, onlyConfirmed, sortCol, sortDir]);
-
-    function toggleSort(col) {
-        if (sortCol === col) setSortDir(d => d === "asc" ? "desc" : "asc");
-        else { setSortCol(col); setSortDir("asc"); }
-    }
-    const sortArrow = col => sortCol !== col ? " ↕" : sortDir === "asc" ? " ↑" : " ↓";
+    const lowSeatsTrips = useMemo(() =>
+        trips
+            .filter(t => !t.full && (t.availableSeats ?? 99) <= 2)
+            .sort((a, b) => (a.availableSeats ?? 0) - (b.availableSeats ?? 0)),
+        [trips]
+    );
 
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                 <div>
                     <h2 style={{ margin: 0 }}>Admin Dashboard</h2>
-                    <p style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Global overview — trips, users and reservations</p>
+                    <p style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>
+                        System overview — manage trips, users and reservations
+                    </p>
                 </div>
                 <button onClick={load} className="btn btn-ghost">Refresh</button>
             </div>
@@ -108,60 +85,48 @@ function AdminDashboard() {
 
             {status === "success" && (
                 <>
-                    <div className="stat-grid">
-                        <StatCard label="Trips"        value={stats.totalTrips} />
-                        <StatCard label="Users"        value={stats.totalUsers} />
-                        <StatCard label="Reservations" value={stats.totalReservations} />
-                        <StatCard label="Confirmed"    value={stats.confirmedReservations} accent />
-                        <StatCard label="Avg Price"    value={`${stats.avgPrice}€`} />
+                    {/* ── KPIs ── */}
+                    <div className="stat-grid" style={{ gridTemplateColumns: "repeat(6, minmax(0,1fr))", marginBottom: 24 }}>
+                        <StatCard label="Total Trips"  value={trips.length} />
+                        <StatCard label="Available"    value={stats.available.length} accent />
+                        <StatCard label="Full"         value={stats.full.length} />
+                        <StatCard label="Users"        value={users.length} />
+                        <StatCard label="Reservations" value={reservations.length} />
+                        <StatCard label="Revenue"      value={`${stats.revenue}€`} accent />
                     </div>
 
-                    <div className="toolbar" style={{ flexWrap: "wrap", gap: 10 }}>
-                        <input
-                            type="search"
-                            placeholder="Search user, trip, price…"
-                            value={q}
-                            onChange={e => setQ(e.target.value)}
-                        />
-                        <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontWeight: 700 }}>
-                            From
-                            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ minWidth: 140 }} />
-                        </label>
-                        <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontWeight: 700 }}>
-                            To
-                            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ minWidth: 140 }} />
-                        </label>
-                        <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontWeight: 700, cursor: "pointer" }}>
-                            <input type="checkbox" checked={onlyConfirmed} onChange={e => setOnlyConfirmed(e.target.checked)} />
-                            Only confirmed
-                        </label>
-                        {(q || dateFrom || dateTo || onlyConfirmed) && (
-                            <button className="btn btn-ghost" onClick={() => {
-                                setQ(""); setDateFrom(""); setDateTo(""); setOnlyConfirmed(false);
-                            }}>Clear</button>
-                        )}
+                    {/* ── Recent reservations ── */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "0 0 6px" }}>
+                        <div>
+                            <span style={{ fontWeight: 800, fontSize: "0.95rem" }}>Recent reservations</span>
+                            <span style={{ color: "var(--muted)", fontSize: "0.82rem", marginLeft: 8 }}>last 10 by date</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 10 }}>
+                            <span className="badge badge-ok">{stats.confirmed.length} confirmed</span>
+                            <span className="badge badge-no">{stats.pending.length} pending</span>
+                        </div>
                     </div>
 
-                    {tableData.length === 0 ? (
-                        <div className="state">No reservations match the current filters.</div>
+                    {recentReservations.length === 0 ? (
+                        <div className="state">No reservations yet.</div>
                     ) : (
                         <div className="table-wrapper">
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <Th label="ID"     col="id"              active={sortCol} onClick={toggleSort} arrow={sortArrow} />
-                                        <Th label="User"   col="userName"        active={sortCol} onClick={toggleSort} arrow={sortArrow} />
-                                        <Th label="Trip"   col="tripLabel"       active={sortCol} onClick={toggleSort} arrow={sortArrow} />
-                                        <Th label="Date"   col="reservationDate" active={sortCol} onClick={toggleSort} arrow={sortArrow} />
-                                        <Th label="Seats"  col="numberOfSeats"   active={sortCol} onClick={toggleSort} arrow={sortArrow} />
-                                        <Th label="Price"  col="totalPrice"      active={sortCol} onClick={toggleSort} arrow={sortArrow} />
-                                        <Th label="Status" col="confirmed"       active={sortCol} onClick={toggleSort} arrow={sortArrow} />
+                                        <th>#</th>
+                                        <th>User</th>
+                                        <th>Route</th>
+                                        <th>Date</th>
+                                        <th>Seats</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {tableData.map(r => (
+                                    {recentReservations.map(r => (
                                         <tr key={r.id}>
-                                            <td>#{r.id}</td>
+                                            <td style={{ color: "var(--muted)" }}>#{r.id}</td>
                                             <td>{r.userName}</td>
                                             <td>{r.tripLabel}</td>
                                             <td>{r.reservationDate ? String(r.reservationDate) : "—"}</td>
@@ -178,6 +143,40 @@ function AdminDashboard() {
                             </table>
                         </div>
                     )}
+
+                    {/* ── Trips running low ── */}
+                    {lowSeatsTrips.length > 0 && (
+                        <>
+                            <div style={{ margin: "20px 0 6px" }}>
+                                <span style={{ fontWeight: 800, fontSize: "0.95rem" }}>Trips running low on seats</span>
+                                <span style={{ color: "var(--muted)", fontSize: "0.82rem", marginLeft: 8 }}>≤ 2 seats left</span>
+                            </div>
+                            <div className="table-wrapper">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Route</th>
+                                            <th>Date</th>
+                                            <th>Transport</th>
+                                            <th>Seats left</th>
+                                            <th>Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {lowSeatsTrips.map(t => (
+                                            <tr key={t.id}>
+                                                <td>{t.origin} → {t.destination}</td>
+                                                <td>{t.dateTime ? String(t.dateTime) : "—"}</td>
+                                                <td>{t.transportTypes ?? "—"}</td>
+                                                <td><span className="badge badge-no">{t.availableSeats}</span></td>
+                                                <td>{t.price}€</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
                 </>
             )}
         </div>
@@ -187,14 +186,18 @@ function AdminDashboard() {
 // ── USER ───────────────────────────────────────────────────────────────────
 
 function UserDashboard() {
-    const [trips, setTrips] = useState([]);
-    const [status, setStatus] = useState("idle");
-    const [error, setError]   = useState(null);
+    const { user: authUser } = useAuth();
+    const navigate = useNavigate();
 
-    const [q, setQ]               = useState("");
-    const [dateFrom, setDateFrom] = useState("");
-    const [dateTo, setDateTo]     = useState("");
-    const [onlyAvailable, setOnlyAvailable] = useState(false);
+    const [allReservations, setAllReservations] = useState([]);
+    const [trips, setTrips]                     = useState([]);
+    const [status, setStatus]                   = useState("idle");
+    const [error, setError]                     = useState(null);
+
+    const [q, setQ]                         = useState("");
+    const [dateFrom, setDateFrom]           = useState("");
+    const [dateTo, setDateTo]               = useState("");
+    const [onlyAvailable, setOnlyAvailable] = useState(true);
 
     const [sortCol, setSortCol] = useState("dateTime");
     const [sortDir, setSortDir] = useState("asc");
@@ -203,8 +206,9 @@ function UserDashboard() {
         try {
             setStatus("loading");
             setError(null);
-            const t = await getTrips();
+            const [t, r] = await Promise.all([getTrips(), getReservations()]);
             setTrips(Array.isArray(t) ? t : []);
+            setAllReservations(Array.isArray(r) ? r : []);
             setStatus("success");
         } catch (e) {
             setError(e);
@@ -214,24 +218,37 @@ function UserDashboard() {
 
     useEffect(() => { load(); }, []);
 
-    const today = new Date().toISOString().split("T")[0];
+    // Filtrar reservas del usuario autenticado por email
+    const myReservations = useMemo(() =>
+        allReservations.filter(r => r.user?.email === authUser?.email),
+        [allReservations, authUser]
+    );
 
-    const stats = useMemo(() => {
-        const available = trips.filter(t => !t.full);
-        const upcoming  = trips.filter(t => t.dateTime && String(t.dateTime) >= today);
-        const totalPrice = trips.reduce((acc, t) => acc + (t.price ?? 0), 0);
-        return {
-            totalTrips: trips.length,
-            available:  available.length,
-            upcoming:   upcoming.length,
-            avgPrice:   trips.length ? Math.round(totalPrice / trips.length) : 0,
-        };
-    }, [trips, today]);
+    const myStats = useMemo(() => {
+        const confirmed = myReservations.filter(r => r.confirmed);
+        const pending   = myReservations.filter(r => !r.confirmed);
+        const spent     = myReservations.reduce((acc, r) => acc + (r.totalPrice ?? 0), 0);
+        return { confirmed, pending, spent };
+    }, [myReservations]);
 
-    const tableData = useMemo(() => {
+    const myReservationRows = useMemo(() =>
+        [...myReservations]
+            .map(r => ({
+                ...r,
+                tripLabel: r.trip
+                    ? `${r.trip.origin ?? "?"} → ${r.trip.destination ?? "?"}`
+                    : "—",
+                tripDate: r.trip?.dateTime ?? null,
+            }))
+            .sort((a, b) => String(b.reservationDate).localeCompare(String(a.reservationDate))),
+        [myReservations]
+    );
+
+    const availableTrips = useMemo(() => {
         const text = q.trim().toLowerCase();
         let list = [...trips];
 
+        if (onlyAvailable) list = list.filter(t => !t.full);
         if (text) {
             list = list.filter(t =>
                 [t.origin, t.destination, t.transportTypes, String(t.price)]
@@ -240,7 +257,6 @@ function UserDashboard() {
         }
         if (dateFrom) list = list.filter(t => t.dateTime && String(t.dateTime) >= dateFrom);
         if (dateTo)   list = list.filter(t => t.dateTime && String(t.dateTime) <= dateTo);
-        if (onlyAvailable) list = list.filter(t => !t.full);
 
         list.sort((a, b) => {
             const va = a[sortCol] ?? "";
@@ -262,71 +278,124 @@ function UserDashboard() {
         <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                 <div>
-                    <h2 style={{ margin: 0 }}>My Dashboard</h2>
-                    <p style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Browse available trips and plan your next ride</p>
+                    <h2 style={{ margin: 0 }}>
+                        Welcome back{authUser?.email ? `, ${authUser.email.split("@")[0]}` : ""}!
+                    </h2>
+                    <p style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>
+                        Your reservations and available trips
+                    </p>
                 </div>
                 <button onClick={load} className="btn btn-ghost">Refresh</button>
             </div>
 
-            {status === "loading" && <Loading text="Loading trips..." />}
+            {status === "loading" && <Loading text="Loading your dashboard..." />}
             {status === "error"   && <ErrorBox error={error} onRetry={load} />}
 
             {status === "success" && (
                 <>
-                    <div className="stat-grid" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))" }}>
-                        <StatCard label="Total Trips" value={stats.totalTrips} />
-                        <StatCard label="Available"   value={stats.available}  accent />
-                        <StatCard label="Upcoming"    value={stats.upcoming} />
-                        <StatCard label="Avg Price"   value={`${stats.avgPrice}€`} />
+                    {/* ── Personal KPIs ── */}
+                    <div className="stat-grid" style={{ gridTemplateColumns: "repeat(4, minmax(0,1fr))", marginBottom: 24 }}>
+                        <StatCard label="My Reservations" value={myReservations.length} />
+                        <StatCard label="Confirmed"       value={myStats.confirmed.length} accent />
+                        <StatCard label="Pending"         value={myStats.pending.length} />
+                        <StatCard label="Total Spent"     value={`${myStats.spent}€`} />
+                    </div>
+
+                    {/* ── My reservations ── */}
+                    <div style={{ margin: "0 0 6px", fontWeight: 800, fontSize: "0.95rem" }}>My reservations</div>
+
+                    {myReservationRows.length === 0 ? (
+                        <div className="state" style={{ marginBottom: 24 }}>
+                            You have no reservations yet. Book a trip below!
+                        </div>
+                    ) : (
+                        <div className="table-wrapper" style={{ marginBottom: 24 }}>
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Route</th>
+                                        <th>Trip date</th>
+                                        <th>Reserved on</th>
+                                        <th>Seats</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {myReservationRows.map(r => (
+                                        <tr key={r.id}>
+                                            <td>{r.tripLabel}</td>
+                                            <td>{r.tripDate ? String(r.tripDate) : "—"}</td>
+                                            <td>{r.reservationDate ? String(r.reservationDate) : "—"}</td>
+                                            <td>{r.numberOfSeats}</td>
+                                            <td>{r.totalPrice}€</td>
+                                            <td>
+                                                <span className={r.confirmed ? "badge badge-ok" : "badge badge-no"}>
+                                                    {r.confirmed ? "Confirmed" : "Pending"}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    {/* ── Find a trip ── */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 6 }}>
+                        <span style={{ fontWeight: 800, fontSize: "0.95rem" }}>Find a trip</span>
+                        <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
+                            {availableTrips.length} trip{availableTrips.length !== 1 ? "s" : ""} found
+                        </span>
                     </div>
 
                     <div className="toolbar" style={{ flexWrap: "wrap", gap: 10 }}>
                         <input
                             type="search"
-                            placeholder="Search origin, destination, transport…"
+                            placeholder="Origin, destination, transport…"
                             value={q}
                             onChange={e => setQ(e.target.value)}
+                            style={{ minWidth: 200 }}
                         />
                         <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontWeight: 700 }}>
                             From
-                            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ minWidth: 140 }} />
+                            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ minWidth: 130 }} />
                         </label>
                         <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontWeight: 700 }}>
                             To
-                            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ minWidth: 140 }} />
+                            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ minWidth: 130 }} />
                         </label>
                         <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--muted)", fontWeight: 700, cursor: "pointer" }}>
                             <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} />
                             Only available
                         </label>
-                        {(q || dateFrom || dateTo || onlyAvailable) && (
+                        {(q || dateFrom || dateTo || !onlyAvailable) && (
                             <button className="btn btn-ghost" onClick={() => {
-                                setQ(""); setDateFrom(""); setDateTo(""); setOnlyAvailable(false);
+                                setQ(""); setDateFrom(""); setDateTo(""); setOnlyAvailable(true);
                             }}>Clear</button>
                         )}
                     </div>
 
-                    {tableData.length === 0 ? (
+                    {availableTrips.length === 0 ? (
                         <div className="state">No trips match the current filters.</div>
                     ) : (
                         <div className="table-wrapper">
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <Th label="ID"          col="id"             active={sortCol} onClick={toggleSort} arrow={sortArrow} />
                                         <Th label="Origin"      col="origin"         active={sortCol} onClick={toggleSort} arrow={sortArrow} />
                                         <Th label="Destination" col="destination"    active={sortCol} onClick={toggleSort} arrow={sortArrow} />
                                         <Th label="Date"        col="dateTime"       active={sortCol} onClick={toggleSort} arrow={sortArrow} />
                                         <Th label="Transport"   col="transportTypes" active={sortCol} onClick={toggleSort} arrow={sortArrow} />
                                         <Th label="Seats"       col="availableSeats" active={sortCol} onClick={toggleSort} arrow={sortArrow} />
                                         <Th label="Price"       col="price"          active={sortCol} onClick={toggleSort} arrow={sortArrow} />
-                                        <Th label="Status"      col="full"           active={sortCol} onClick={toggleSort} arrow={sortArrow} />
+                                        <th>Status</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {tableData.map(t => (
+                                    {availableTrips.map(t => (
                                         <tr key={t.id}>
-                                            <td>#{t.id}</td>
                                             <td>{t.origin}</td>
                                             <td>{t.destination}</td>
                                             <td>{t.dateTime ? String(t.dateTime) : "—"}</td>
@@ -337,6 +406,17 @@ function UserDashboard() {
                                                 <span className={!t.full ? "badge badge-ok" : "badge badge-no"}>
                                                     {!t.full ? "Available" : "Full"}
                                                 </span>
+                                            </td>
+                                            <td>
+                                                {!t.full && (
+                                                    <button
+                                                        className="btn btn-edit"
+                                                        style={{ padding: "6px 12px", fontSize: "0.85rem" }}
+                                                        onClick={() => navigate(`/reservations/new?tripId=${t.id}`)}
+                                                    >
+                                                        Book
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import Loading from "../../components/Loading";
 import ErrorBox from "../../components/ErrorBox";
 import { createReservation, getReservation, updateReservation } from "../../api/reservationsApi";
@@ -20,8 +21,17 @@ const empty = {
 export default function ReservationForm({ mode }) {
     const { id } = useParams();
     const nav = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user: authUser } = useAuth();
 
-    const [form, setForm] = useState(empty);
+    const preselectedTripId = searchParams.get("tripId") ?? "";
+    const preselectedUserId = authUser?.id ? String(authUser.id) : "";
+
+    const [form, setForm] = useState({
+        ...empty,
+        tripId: preselectedTripId,
+        userId: preselectedUserId,
+    });
     const [status, setStatus] = useState(mode === "edit" ? "loading" : "idle");
     const [error, setError] = useState(null);
 
