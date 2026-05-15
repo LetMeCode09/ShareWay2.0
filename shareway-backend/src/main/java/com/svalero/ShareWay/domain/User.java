@@ -41,6 +41,10 @@ public class User {
     private Integer stars;
     @Column(nullable = false)
     private Boolean verified = false;
+    @Column(nullable = false)
+    private String password;
+    @Column(nullable = false)
+    private String role = "USER";
 
     @ManyToOne
     @JoinColumn(name="user_id")
