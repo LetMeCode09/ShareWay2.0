@@ -1,47 +1,64 @@
 import { Route, Routes, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout.jsx";
+import PrivateRoute from "./components/PrivateRoute.jsx";
+import Dashboard from "./pages/dashboard/Dashboard.jsx";
+import LoginPage from "./pages/auth/LoginPage.jsx";
+import RegisterPage from "./pages/auth/RegisterPage.jsx";
 
 // Trips
 import TripsList from "./pages/trips/TripsList.jsx";
 import TripDetails from "./pages/trips/TripDetails.jsx";
 import TripForm from "./pages/trips/TripForm.jsx";
 
-// Users (OJO: UserList.jsx)
+// Users
 import UserList from "./pages/users/UserList.jsx";
 import UserDetails from "./pages/users/UserDetails.jsx";
 import UserForm from "./pages/users/UserForm.jsx";
 
-// Reservations (OJO: ReservationList.jsx)
+// Reservations
 import ReservationList from "./pages/reservations/ReservationList.jsx";
 import ReservationDetails from "./pages/reservations/ReservationDetails.jsx";
 import ReservationForm from "./pages/reservations/ReservationForm.jsx";
 
+function RootRedirect() {
+    const { isAuthenticated } = useAuth();
+    return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+}
+
 export default function App() {
-  return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<Navigate to="/trips" replace />} />
+    return (
+        <Routes>
+            {/* Public: login / register (sin Layout) */}
+            <Route path="/login"    element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-        {/* Trips */}
-        <Route path="/trips" element={<TripsList />} />
-        <Route path="/trips/new" element={<TripForm mode="create" />} />
-        <Route path="/trips/:id" element={<TripDetails />} />
-        <Route path="/trips/:id/edit" element={<TripForm mode="edit" />} />
+            {/* Protected: todo dentro del Layout */}
+            <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
+                <Route path="/" element={<RootRedirect />} />
 
-        {/* Users */}
-        <Route path="/users" element={<UserList />} />
-        <Route path="/users/new" element={<UserForm mode="create" />} />
-        <Route path="/users/:id" element={<UserDetails />} />
-        <Route path="/users/:id/edit" element={<UserForm mode="edit" />} />
+                <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* Reservations */}
-        <Route path="/reservations" element={<ReservationList />} />
-        <Route path="/reservations/new" element={<ReservationForm mode="create" />} />
-        <Route path="/reservations/:id" element={<ReservationDetails />} />
-        <Route path="/reservations/:id/edit" element={<ReservationForm mode="edit" />} />
+                {/* Trips */}
+                <Route path="/trips"          element={<TripsList />} />
+                <Route path="/trips/new"      element={<TripForm mode="create" />} />
+                <Route path="/trips/:id"      element={<TripDetails />} />
+                <Route path="/trips/:id/edit" element={<TripForm mode="edit" />} />
 
-        <Route path="*" element={<div>Not found</div>} />
-      </Route>
-    </Routes>
-  );
+                {/* Users */}
+                <Route path="/users"          element={<UserList />} />
+                <Route path="/users/new"      element={<UserForm mode="create" />} />
+                <Route path="/users/:id"      element={<UserDetails />} />
+                <Route path="/users/:id/edit" element={<UserForm mode="edit" />} />
+
+                {/* Reservations */}
+                <Route path="/reservations"          element={<ReservationList />} />
+                <Route path="/reservations/new"      element={<ReservationForm mode="create" />} />
+                <Route path="/reservations/:id"      element={<ReservationDetails />} />
+                <Route path="/reservations/:id/edit" element={<ReservationForm mode="edit" />} />
+
+                <Route path="*" element={<div>Not found</div>} />
+            </Route>
+        </Routes>
+    );
 }

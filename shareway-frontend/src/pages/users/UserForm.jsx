@@ -9,9 +9,11 @@ const empty = {
     name: "",
     email: "",
     phone: "",
-    registrationDate: "", // "2026-02-07"
+    registrationDate: "",
     stars: 0,
     verified: false,
+    password: "",
+    role: "USER",
 };
 
 export default function UserForm({ mode }) {
@@ -41,6 +43,8 @@ export default function UserForm({ mode }) {
             registrationDate: data.registrationDate ?? "",
             stars: data.stars ?? 0,
             verified: Boolean(data.verified),
+            password: data.password ?? "",
+            role: data.role ?? "USER",
             });
             setStatus("idle");
         } catch (e) {
@@ -88,17 +92,30 @@ export default function UserForm({ mode }) {
         {error && <div style={{ marginTop: 12 }}><ErrorBox error={error} /></div>}
 
         <form onSubmit={onSubmit} className="grid" style={{ marginTop: 12 }}>
-            <input value={form.name} onChange={(e) => setField("name", e.target.value)} placeholder="name" />
-            <input value={form.email} onChange={(e) => setField("email", e.target.value)} placeholder="email" />
-            <input value={form.phone} onChange={(e) => setField("phone", e.target.value)} placeholder="phone" />
-            <input value={form.registrationDate} onChange={(e) => setField("registrationDate", e.target.value)} placeholder="registrationDate (YYYY-MM-DD)" />
+            <input value={form.name} onChange={(e) => setField("name", e.target.value)} placeholder="name" required />
+            <input type="email" value={form.email} onChange={(e) => setField("email", e.target.value)} placeholder="email" required />
+            <input value={form.phone} onChange={(e) => setField("phone", e.target.value)} placeholder="phone (min 9 digits)" required />
+            <input value={form.registrationDate} onChange={(e) => setField("registrationDate", e.target.value)} placeholder="registrationDate (YYYY-MM-DD)" required />
 
-            <input type="number" value={form.stars} onChange={(e) => setField("stars", e.target.value)} placeholder="stars" />
+            <input type="number" min={0} max={5} value={form.stars} onChange={(e) => setField("stars", e.target.value)} placeholder="stars (0-5)" />
 
             <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input type="checkbox" checked={form.verified} onChange={(e) => setField("verified", e.target.checked)} />
             verified
             </label>
+
+            <input
+                type="password"
+                value={form.password}
+                onChange={(e) => setField("password", e.target.value)}
+                placeholder={mode === "create" ? "password" : "password (leave unchanged to keep current)"}
+                required={mode === "create"}
+            />
+
+            <select value={form.role} onChange={(e) => setField("role", e.target.value)}>
+                <option value="USER">USER</option>
+                <option value="ADMIN">ADMIN</option>
+            </select>
 
             <button type="submit">
             {mode === "create" ? t.create : t.save}

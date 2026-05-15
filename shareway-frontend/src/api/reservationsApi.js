@@ -23,13 +23,3 @@ export async function updateReservation(id, payload) {
 export async function deleteReservation(id) {
     await http.delete(`/reservations/${id}`);
 }
-
-export async function getTrips() {
-    const { data } = await http.get("/trips");
-    return data;
-}
-
-export async function getTrip(id) {
-    const { data } = await http.get(`/trips/${id}`);
-    return data;
-}
