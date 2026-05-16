@@ -1,7 +1,6 @@
 package com.svalero.ShareWay.controller;
 
 import com.svalero.ShareWay.domain.Trip;
-import com.svalero.ShareWay.exception.TripNotFoundException;
 import com.svalero.ShareWay.service.TripService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -21,7 +20,7 @@ public class TripController {
     @Autowired
     private TripService tripService;
 
-    private final Logger logger = LoggerFactory.getLogger(ReservationController.class);
+    private final Logger logger = LoggerFactory.getLogger(TripController.class);
 
     // GET /trips
     @GetMapping
@@ -32,30 +31,29 @@ public class TripController {
 
     // GET /trips/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Trip> get(@PathVariable long id) throws TripNotFoundException {
-        logger.info("GET /trips/id");
+    public ResponseEntity<Trip> get(@PathVariable long id) {
+        logger.info("GET /trips/{}", id);
         return new ResponseEntity<>(tripService.findById(id), HttpStatus.OK);
     }
 
     // POST /trips
     @PostMapping
     public ResponseEntity<Trip> addTrip(@Valid @RequestBody Trip trip) {
+        logger.info("POST /trips");
         return new ResponseEntity<>(tripService.add(trip), HttpStatus.CREATED);
     }
 
     // PUT /trips/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Trip> modifyTrip(
-            @PathVariable long id,
-            @Valid @RequestBody Trip trip
-    ) throws TripNotFoundException {
-
+    public ResponseEntity<Trip> modifyTrip(@PathVariable long id, @Valid @RequestBody Trip trip) {
+        logger.info("PUT /trips/{}", id);
         return new ResponseEntity<>(tripService.modify(id, trip), HttpStatus.OK);
     }
 
     // DELETE /trips/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTrip(@PathVariable long id) throws TripNotFoundException {
+    public ResponseEntity<Void> deleteTrip(@PathVariable long id) {
+        logger.info("DELETE /trips/{}", id);
         tripService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

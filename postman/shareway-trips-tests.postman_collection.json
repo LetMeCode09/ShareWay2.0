@@ -1,0 +1,295 @@
+{
+  "info": {
+    "name": "ShareWay - Trips Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "tripId", "value": "" },
+    { "key": "adminToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Login Admin (obtener token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Login devuelve 200', () => {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response tiene token', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('token');",
+              "    pm.collectionVariables.set('adminToken', body.token);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@shareway.com\",\n  \"password\": \"1234\"\n}"
+        }
+      }
+    },
+    {
+      "name": "1. GET /trips - 200 OK",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 200', () => {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response es un array', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": "{{baseUrl}}/trips"
+      }
+    },
+    {
+      "name": "2. POST /trips - 201 Created",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 201', () => {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Response tiene id, origin y destination', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('id');",
+              "    pm.expect(body).to.have.property('origin');",
+              "    pm.expect(body).to.have.property('destination');",
+              "    pm.collectionVariables.set('tripId', body.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": "{{baseUrl}}/trips",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"origin\": \"Zaragoza\",\n  \"destination\": \"Madrid\",\n  \"dateTime\": \"2026-12-01T10:00:00\",\n  \"transportTypes\": \"CAR\",\n  \"availableSeats\": 3,\n  \"prices\": 25.0,\n  \"isFull\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "3. POST /trips - 400 Bad Request (body inválido)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 400', () => {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "pm.test('Response tiene status y message', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('status');",
+              "    pm.expect(body).to.have.property('message');",
+              "    pm.expect(body.status).to.eql(400);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": "{{baseUrl}}/trips",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destination\": \"Madrid\"\n}"
+        }
+      }
+    },
+    {
+      "name": "4. GET /trips/{id} - 200 OK",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 200', () => {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response tiene id correcto', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('id');",
+              "    pm.expect(body).to.have.property('origin');",
+              "    pm.expect(body).to.have.property('destination');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": "{{baseUrl}}/trips/{{tripId}}"
+      }
+    },
+    {
+      "name": "5. GET /trips/{id} - 404 Not Found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 404', () => {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "pm.test('Response tiene status y message', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('status');",
+              "    pm.expect(body).to.have.property('message');",
+              "    pm.expect(body.status).to.eql(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": "{{baseUrl}}/trips/99999"
+      }
+    },
+    {
+      "name": "6. PUT /trips/{id} - 200 OK",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 200', () => {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Response tiene los datos actualizados', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('id');",
+              "    pm.expect(body.origin).to.eql('Zaragoza Actualizado');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": "{{baseUrl}}/trips/{{tripId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"origin\": \"Zaragoza Actualizado\",\n  \"destination\": \"Madrid\",\n  \"dateTime\": \"2026-12-01T10:00:00\",\n  \"transportTypes\": \"CAR\",\n  \"availableSeats\": 2,\n  \"prices\": 30.0,\n  \"isFull\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "7. PUT /trips/{id} - 404 Not Found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 404', () => {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "pm.test('Response tiene status y message', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('status');",
+              "    pm.expect(body).to.have.property('message');",
+              "    pm.expect(body.status).to.eql(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": "{{baseUrl}}/trips/99999",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"origin\": \"Zaragoza\",\n  \"destination\": \"Madrid\",\n  \"dateTime\": \"2026-12-01T10:00:00\",\n  \"transportTypes\": \"CAR\",\n  \"availableSeats\": 2,\n  \"prices\": 30.0,\n  \"isFull\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "8. DELETE /trips/{id} - 204 No Content",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 204', () => {",
+              "    pm.response.to.have.status(204);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": "{{baseUrl}}/trips/{{tripId}}"
+      }
+    },
+    {
+      "name": "9. DELETE /trips/{id} - 404 Not Found",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status es 404', () => {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "pm.test('Response tiene status y message', () => {",
+              "    const body = pm.response.json();",
+              "    pm.expect(body).to.have.property('status');",
+              "    pm.expect(body).to.have.property('message');",
+              "    pm.expect(body.status).to.eql(404);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+        "url": "{{baseUrl}}/trips/99999"
+      }
+    }
+  ]
+}
