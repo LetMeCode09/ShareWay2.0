@@ -8,7 +8,7 @@ VALUES (
            CURRENT_DATE,
            5,
            true,
-           '$2a$10$9UVkGQEGeoVG8hGdzs71y.KS1cDjjsKT8iZu/17XzNFTByVobcPYS',
+           '$2a$10$j4L6CC/ycr1.m4TSf9ARR.45xZLnaOQVppBouLUwntylnQdXdayAu',
            'ADMIN'
        );
 
@@ -20,6 +20,6 @@ VALUES (
            CURRENT_DATE,
            0,
            true,
-           '$2a$10$99tNYcUFLY50W5/aZzQRt.odz0nJAkVlM/xyLh4S/s/AydV/5XEUu',
+           '$2a$10$kLInygqk9ESxTNrfOJlog.Tu/a1bcHG8WC2UM.RwgELaQakyvfmiS',
            'USER'
        );
