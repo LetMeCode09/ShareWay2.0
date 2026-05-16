@@ -1,0 +1,31 @@
+{
+  "id": "local-env-shareway",
+  "name": "local",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "tripId",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

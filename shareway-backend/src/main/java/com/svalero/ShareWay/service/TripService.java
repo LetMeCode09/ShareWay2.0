@@ -18,26 +18,25 @@ public class TripService {
         return tripRepository.findAll();
     }
 
-    public Trip findById(long id) throws TripNotFoundException {
+    public Trip findById(long id) {
         return tripRepository.findById(id)
-                .orElseThrow(TripNotFoundException::new);
+                .orElseThrow(() -> new TripNotFoundException(id));
     }
 
     public Trip add(Trip trip) {
         return tripRepository.save(trip);
     }
 
-    public Trip modify(long id, Trip trip) throws TripNotFoundException {
+    public Trip modify(long id, Trip trip) {
         Trip existingTrip = tripRepository.findById(id)
-                .orElseThrow(TripNotFoundException::new);
-
+                .orElseThrow(() -> new TripNotFoundException(id));
         trip.setId(existingTrip.getId());
         return tripRepository.save(trip);
     }
 
-    public void delete(long id) throws TripNotFoundException {
+    public void delete(long id) {
         Trip existingTrip = tripRepository.findById(id)
-                .orElseThrow(TripNotFoundException::new);
+                .orElseThrow(() -> new TripNotFoundException(id));
         tripRepository.delete(existingTrip);
     }
 }
