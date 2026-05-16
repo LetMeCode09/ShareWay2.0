@@ -277,6 +277,13 @@ npm run dev
 
 ---
 
+### Docker-compose
+
+docker-compose.yml principal: encargado de levantar BBDD, servidor de configuración y API
+
+Se encuentra en el repositorio --> https://github.com/LetMeCode09/ShareWayConfigServer
+
+
 ## Testing
 
 ### Colección Postman
