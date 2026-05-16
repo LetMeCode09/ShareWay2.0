@@ -4,8 +4,7 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "tripId", "value": "" },
-    { "key": "adminToken", "value": "" }
+    { "key": "tripId", "value": "" }
   ],
   "item": [
     {
@@ -21,6 +20,7 @@
               "pm.test('Response tiene token', () => {",
               "    const body = pm.response.json();",
               "    pm.expect(body).to.have.property('token');",
+              "    pm.environment.set('adminToken', body.token);",
               "    pm.collectionVariables.set('adminToken', body.token);",
               "});"
             ]
@@ -76,6 +76,7 @@
               "    pm.expect(body).to.have.property('id');",
               "    pm.expect(body).to.have.property('origin');",
               "    pm.expect(body).to.have.property('destination');",
+              "    pm.environment.set('tripId', body.id);",
               "    pm.collectionVariables.set('tripId', body.id);",
               "});"
             ]
