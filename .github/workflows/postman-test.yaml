@@ -89,6 +89,16 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            mkdir -p ~/app
+            cat > ~/app/docker-compose.yml << 'EOF'
+            version: '3.8'
+            services:
+              backend:
+                image: aritz993/shareway-backend:latest
+                ports:
+                  - "8080:8080"
+                restart: always
+            EOF
             cd ~/app
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             docker-compose pull
