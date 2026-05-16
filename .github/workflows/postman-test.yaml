@@ -1,16 +1,15 @@
-name: Postman Tests & Deploy
+name: Postman API Tests
 
 on:
-  push:
-    branches: [develop]
   pull_request:
-    branches: [develop]
+    branches: [ main, develop ]
 
 jobs:
-  test-and-deploy:
+  api-tests:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout código
+      - name: Checkout c�digo
         uses: actions/checkout@v4
 
       - name: Configurar JDK 21
@@ -29,19 +28,6 @@ jobs:
       - name: Build del backend (sin tests)
         working-directory: shareway-backend
         run: mvn package -DskipTests -q
-
-      - name: Login en Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build y push imagen Docker
-        uses: docker/build-push-action@v5
-        with:
-          context: ./shareway-backend
-          push: true
-          tags: aritz993/shareway-backend:latest
 
       - name: Arrancar API en perfil dev (H2)
         working-directory: shareway-backend
@@ -81,25 +67,3 @@ jobs:
         with:
           name: postman-test-results
           path: postman/results/
-
-      - name: Deploy en EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: 52.70.109.66
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            mkdir -p ~/app
-            cat > ~/app/docker-compose.yml << 'EOF'
-            version: '3.8'
-            services:
-              backend:
-                image: aritz993/shareway-backend:latest
-                ports:
-                  - "8080:8080"
-                restart: always
-            EOF
-            cd ~/app
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            docker-compose pull
-            docker-compose up -d --remove-orphans
