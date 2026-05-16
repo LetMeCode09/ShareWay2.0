@@ -1,83 +1,95 @@
-- name: Checkout código
-  uses: actions/checkout@v4
+name: Postman Tests & Deploy
 
-- name: Configurar JDK 21
-  uses: actions/setup-java@v4
-  with:
-    java-version: '21'
-    distribution: 'temurin'
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
 
-- name: Cache Maven
-  uses: actions/cache@v4
-  with:
-    path: ~/.m2/repository
-    key: ${{ runner.os }}-maven-${{ hashFiles('shareway-backend/pom.xml') }}
-    restore-keys: ${{ runner.os }}-maven-
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
 
-- name: Build del backend (sin tests)
-  working-directory: shareway-backend
-  run: mvn package -DskipTests -q
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-- name: Login en Docker Hub
-  uses: docker/login-action@v3
-  with:
-    username: ${{ secrets.DOCKER_USERNAME }}
-    password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('shareway-backend/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
 
-- name: Build y push imagen Docker
-  uses: docker/build-push-action@v5
-  with:
-    context: ./shareway-backend
-    push: true
-    tags: aritz993/shareway-backend:latest
+      - name: Build del backend (sin tests)
+        working-directory: shareway-backend
+        run: mvn package -DskipTests -q
 
-- name: Arrancar API en perfil dev (H2)
-  working-directory: shareway-backend
-  run: |
-    java \
-      -jar target/*.jar \
-      --spring.profiles.active=dev \
-      --spring.config.import=optional:configserver: \
-      --spring.datasource.url=jdbc:h2:mem:shareway_dev \
-      --spring.datasource.driver-class-name=org.h2.Driver \
-      --spring.datasource.username=sa \
-      --spring.datasource.password= \
-      --spring.jpa.hibernate.ddl-auto=create-drop \
-      --spring.sql.init.mode=always \
-      --spring.sql.init.data-locations=classpath:h2.sql \
-      --spring.jpa.defer-datasource-initialization=true &
-    echo "Esperando que arranque la API..."
-    for i in {1..20}; do
-      curl -s http://localhost:8080/actuator/health && break || sleep 3
-    done
+      - name: Login en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-- name: Instalar Newman
-  run: npm install -g newman newman-reporter-htmlextra
+      - name: Build y push imagen Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: ./shareway-backend
+          push: true
+          tags: aritz993/shareway-backend:latest
 
-- name: Ejecutar tests Postman
-  run: |
-    newman run postman/shareway-trips-tests.postman_collection.json \
-      --environment postman/local.postman_environment.json \
-      --reporters cli,junit,htmlextra \
-      --reporter-junit-export postman/results/junit.xml \
-      --reporter-htmlextra-export postman/results/report.html \
-      --bail
+      - name: Arrancar API en perfil dev (H2)
+        working-directory: shareway-backend
+        run: |
+          java \
+            -jar target/*.jar \
+            --spring.profiles.active=dev \
+            --spring.config.import=optional:configserver: \
+            --spring.datasource.url=jdbc:h2:mem:shareway_dev \
+            --spring.datasource.driver-class-name=org.h2.Driver \
+            --spring.datasource.username=sa \
+            --spring.datasource.password= \
+            --spring.jpa.hibernate.ddl-auto=create-drop \
+            --spring.sql.init.mode=always \
+            --spring.sql.init.data-locations=classpath:h2.sql \
+            --spring.jpa.defer-datasource-initialization=true &
+          echo "Esperando que arranque la API..."
+          for i in {1..20}; do
+            curl -s http://localhost:8080/actuator/health && break || sleep 3
+          done
 
-- name: Publicar resultados
-  uses: actions/upload-artifact@v4
-  if: always()
-  with:
-    name: postman-test-results
-    path: postman/results/
+      - name: Instalar Newman
+        run: npm install -g newman newman-reporter-htmlextra
 
-- name: Deploy en EC2
-  uses: appleboy/ssh-action@v1
-  with:
-    host: 52.70.109.66
-    username: ${{ secrets.EC2_USERNAME }}
-    password: ${{ secrets.EC2_PASSWORD }}
-    script: |
-      cd ~/app
-      docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      docker compose pull
-      docker compose up -d --remove-orphans
+      - name: Ejecutar tests Postman
+        run: |
+          newman run postman/shareway-trips-tests.postman_collection.json \
+            --environment postman/local.postman_environment.json \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export postman/results/junit.xml \
+            --reporter-htmlextra-export postman/results/report.html \
+            --bail
+
+      - name: Publicar resultados
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postman-test-results
+          path: postman/results/
+
+      - name: Deploy en EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 52.70.109.66
+          username: ${{ secrets.EC2_USERNAME }}
+          password: ${{ secrets.EC2_PASSWORD }}
+          script: |
+            cd ~/app
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            docker compose pull
+            docker compose up -d --remove-orphans
