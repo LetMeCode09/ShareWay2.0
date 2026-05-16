@@ -1,761 +1,891 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
-  title: ShareWay
-  description: REST API for managing trips, users and reservations in the ShareWay
-    carpooling application.
+  title: ShareWay API
+  description: |
+    API REST para la gestión de viajes compartidos y reservas.
+    Permite registrar viajes, gestionar reservas y administrar usuarios.
+    Relacionada con los ODS 11 (Ciudades sostenibles) y 13 (Acción por el clima)
+    al fomentar el transporte compartido y la reducción de emisiones.
   version: 1.0.0
+  contact:
+    name: ShareWay Team
+
 servers:
   - url: http://localhost:8080
-    description: Local development server
-paths:
-  /trips:
-    get:
-      summary: List all trips
-      description: Returns a list with all available trips.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Trip'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    post:
-      summary: Create a trip
-      description: Creates a new trip.
-      requestBody:
-        description: Trip data to create.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TripInDto'
-      responses:
-        '200':
-          description: Trip created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Trip'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-  /trips/{id}:
-    get:
-      summary: Get a trip by id
-      description: Returns a single trip by its id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Trip id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Trip'
-        '404':
-          description: Trip not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    put:
-      summary: Update a trip
-      description: Updates an existing trip by id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Trip id.
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        description: Updated trip data.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TripInDto'
-      responses:
-        '200':
-          description: Trip updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Trip'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
-        '404':
-          description: Trip not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    delete:
-      summary: Delete a trip
-      description: Deletes a trip by id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Trip id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: Trip deleted
-        '404':
-          description: Trip not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-  /users:
-    get:
-      summary: List all users
-      description: Returns a list with all registered users.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    post:
-      summary: Create a user
-      description: Registers a new user.
-      requestBody:
-        description: User data to create.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserInDto'
-      responses:
-        '201':
-          description: User created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-  /users/{id}:
-    get:
-      summary: Get a user by id
-      description: Returns a single user by its id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: User id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    put:
-      summary: Update a user
-      description: Updates an existing user by id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: User id.
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        description: Updated user data.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserInDto'
-      responses:
-        '200':
-          description: User updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    delete:
-      summary: Delete a user
-      description: Deletes a user by id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: User id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '204':
-          description: User deleted
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-  /users/email/{email}:
-    get:
-      summary: Get a user by email
-      description: Returns a single user by its email address.
-      parameters:
-        - name: email
-          in: path
-          required: true
-          description: User email.
-          schema:
-            type: string
-            format: email
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '404':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-  /users/search:
-    get:
-      summary: Search users by name
-      description: Returns a list of users whose name contains the provided text (case-insensitive).
-      parameters:
-        - name: name
-          in: query
-          required: true
-          description: Text to search in user names.
-          schema:
-            type: string
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-  /reservations:
-    get:
-      summary: List all reservations
-      description: Returns a list with all reservations.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Reservation'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    post:
-      summary: Create a reservation
-      description: Creates a new reservation for a given user and trip.
-      requestBody:
-        description: Reservation data to create.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReservationInDto'
-      responses:
-        '200':
-          description: Reservation created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reservation'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-  /reservations/{id}:
-    get:
-      summary: Get a reservation by id
-      description: Returns a single reservation by its id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Reservation id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reservation'
-        '404':
-          description: Reservation not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    put:
-      summary: Update a reservation
-      description: Updates an existing reservation by id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Reservation id.
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        description: Updated reservation data.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ReservationInDto'
-      responses:
-        '200':
-          description: Reservation updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Reservation'
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BadRequest'
-        '404':
-          description: Reservation not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
-    delete:
-      summary: Delete a reservation
-      description: Deletes a reservation by id.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Reservation id.
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '200':
-          description: Reservation deleted
-        '404':
-          description: Reservation not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerError'
+    description: Entorno local (dev - H2)
+  - url: http://localhost:8080
+    description: Entorno producción (prod - MariaDB)
+
+tags:
+  - name: Auth
+    description: Registro e inicio de sesión
+  - name: Trips
+    description: Gestión de viajes
+  - name: Reservations
+    description: Gestión de reservas
+  - name: Users
+    description: Gestión de usuarios
+
+# ─────────────────────────────────────────────
+# SECURITY
+# ─────────────────────────────────────────────
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
-    TripInDto:
+
+    # ── AUTH ──
+    LoginRequest:
       type: object
+      required: [email, password]
       properties:
-        origin:
-          type: string
-          description: Trip origin location.
-        destination:
-          type: string
-          description: Trip destination location.
-        dateTime:
-          type: string
-          format: date-time
-          description: Date and time of the trip.
-        transportTypes:
-          type: string
-          description: Transport type(s) used for the trip.
-        availableSeats:
-          type: integer
-          format: int32
-          minimum: 1
-          description: Number of available seats.
-        price:
-          type: integer
-          format: int32
-          minimum: 0
-          description: Price per seat (or total trip price depending on business rules).
-        full:
-          type: boolean
-          description: Indicates whether the trip is full.
-      required:
-        - origin
-        - destination
-        - dateTime
-      example:
-        origin: Zaragoza
-        destination: Huesca
-        dateTime: '2026-02-20T10:30:00'
-        transportTypes: car
-        availableSeats: 3
-        price: 10
-        full: false
-    Trip:
-      allOf:
-        - $ref: '#/components/schemas/TripInDto'
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          description: Unique trip identifier.
-      example:
-        id: 1
-        origin: Zaragoza
-        destination: Huesca
-        dateTime: '2026-02-20T10:30:00'
-        transportTypes: car
-        availableSeats: 3
-        price: 10
-        full: false
-    UserInDto:
-      type: object
-      properties:
-        name:
-          type: string
-          description: User full name.
         email:
           type: string
           format: email
-          description: User email address.
+          example: admin@shareway.com
+        password:
+          type: string
+          example: admin123
+
+    RegisterRequest:
+      type: object
+      required: [name, email, phone, password]
+      properties:
+        name:
+          type: string
+          example: Borja García
+        email:
+          type: string
+          format: email
+          example: borja@shareway.com
         phone:
           type: string
-          description: User phone number (digits only, min 9).
-        registrationDate:
+          pattern: '^\d{9,}$'
+          example: "612345678"
+        password:
+          type: string
+          minLength: 6
+          example: mipassword123
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiJ9...
+        role:
+          type: string
+          enum: [ADMIN, USER]
+          example: ADMIN
+        email:
+          type: string
+          format: email
+          example: admin@shareway.com
+
+    # ── TRIP ──
+    Trip:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: true
+          example: 1
+        origin:
+          type: string
+          example: Zaragoza
+        destination:
+          type: string
+          example: Madrid
+        dateTime:
           type: string
           format: date
-          description: User registration date.
-        stars:
+          example: "2026-12-01"
+        transportTypes:
+          type: string
+          enum: [CAR, TRAIN, BUS]
+          example: CAR
+        availableSeats:
           type: integer
-          format: int32
+          minimum: 1
+          example: 3
+        price:
+          type: integer
           minimum: 0
-          maximum: 5
-          description: User rating from 0 to 5.
-        verified:
+          example: 25
+        full:
           type: boolean
-          description: Whether the user is verified.
-      required:
-        - name
-        - email
-        - phone
-        - registrationDate
-      example:
-        name: Lucia Perez
-        email: lucia@example.com
-        phone: '612345678'
-        registrationDate: '2026-02-07'
-        stars: 5
-        verified: false
-    User:
-      allOf:
-        - $ref: '#/components/schemas/UserInDto'
+          example: false
+
+    TripRequest:
+      type: object
+      required: [origin, destination, dateTime]
+      properties:
+        origin:
+          type: string
+          example: Zaragoza
+        destination:
+          type: string
+          example: Madrid
+        dateTime:
+          type: string
+          format: date
+          example: "2026-12-01"
+        transportTypes:
+          type: string
+          enum: [CAR, TRAIN, BUS]
+          example: CAR
+        availableSeats:
+          type: integer
+          minimum: 1
+          example: 3
+        price:
+          type: integer
+          minimum: 0
+          example: 25
+        full:
+          type: boolean
+          example: false
+
+    # ── RESERVATION ──
+    Reservation:
       type: object
       properties:
         id:
           type: integer
           format: int64
-          description: Unique user identifier.
-      example:
-        id: 1
-        name: Lucia Perez
-        email: lucia@example.com
-        phone: '612345678'
-        registrationDate: '2026-02-07'
-        stars: 5
-        verified: false
-    UserRef:
-      type: object
-      properties:
-        id:
+          readOnly: true
+          example: 1
+        numberOfSeats:
           type: integer
-          format: int64
-          description: User id.
-      required:
-        - id
-      example:
-        id: 1
-    TripRef:
-      type: object
-      properties:
-        id:
+          minimum: 1
+          example: 2
+        reservationDate:
+          type: string
+          format: date
+          example: "2026-05-16"
+        confirmed:
+          type: boolean
+          example: true
+        comment:
+          type: string
+          example: Necesito maletero grande
+        totalPrice:
           type: integer
-          format: int64
-          description: Trip id.
-      required:
-        - id
-      example:
-        id: 1
-    ReservationInDto:
+          minimum: 0
+          example: 50
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        trip:
+          $ref: '#/components/schemas/TripSummary'
+
+    ReservationRequest:
       type: object
+      required: [reservationDate]
       properties:
         numberOfSeats:
           type: integer
-          format: int32
           minimum: 1
-          description: Number of seats reserved.
+          example: 2
         reservationDate:
           type: string
-          format: date-time
-          description: Reservation date and time.
+          format: date
+          example: "2026-05-16"
         confirmed:
           type: boolean
-          description: Whether the reservation is confirmed.
+          example: false
         comment:
           type: string
-          description: Optional comment for the reservation.
+          example: Necesito maletero grande
         totalPrice:
           type: integer
-          format: int32
           minimum: 0
-          description: Total price of the reservation.
+          example: 50
         user:
-          $ref: '#/components/schemas/UserRef'
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 2
         trip:
-          $ref: '#/components/schemas/TripRef'
-      required:
-        - numberOfSeats
-        - reservationDate
-      example:
-        numberOfSeats: 2
-        reservationDate: '2026-02-07T11:00:00'
-        confirmed: true
-        comment: I will be at the main station.
-        totalPrice: 20
-        user:
-          id: 1
-        trip:
-          id: 1
-    Reservation:
-      allOf:
-        - $ref: '#/components/schemas/ReservationInDto'
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+
+    # ── USER ──
+    User:
       type: object
       properties:
         id:
           type: integer
           format: int64
-          description: Unique reservation identifier.
-      example:
-        id: 1
-        numberOfSeats: 2
-        reservationDate: '2026-02-07T11:00:00'
-        confirmed: true
-        comment: I will be at the main station.
-        totalPrice: 20
-        user:
-          id: 1
-        trip:
-          id: 1
+          readOnly: true
+          example: 1
+        name:
+          type: string
+          example: Borja García
+        email:
+          type: string
+          format: email
+          example: borja@shareway.com
+        phone:
+          type: string
+          example: "612345678"
+        registrationDate:
+          type: string
+          format: date
+          example: "2026-05-16"
+        stars:
+          type: integer
+          minimum: 0
+          maximum: 5
+          example: 4
+        verified:
+          type: boolean
+          example: true
+        role:
+          type: string
+          enum: [ADMIN, USER]
+          example: USER
+
+    UserRequest:
+      type: object
+      required: [name, email, phone, registrationDate, password]
+      properties:
+        name:
+          type: string
+          example: Borja García
+        email:
+          type: string
+          format: email
+          example: borja@shareway.com
+        phone:
+          type: string
+          pattern: '^\d{9,}$'
+          example: "612345678"
+        registrationDate:
+          type: string
+          format: date
+          example: "2026-05-16"
+        stars:
+          type: integer
+          minimum: 0
+          maximum: 5
+          example: 0
+        verified:
+          type: boolean
+          example: false
+        password:
+          type: string
+          example: mipassword123
+        role:
+          type: string
+          enum: [ADMIN, USER]
+          example: USER
+
+    # ── SUMMARIES (para relaciones anidadas) ──
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        name:
+          type: string
+          example: Usuario Ejemplo
+        email:
+          type: string
+          example: user@shareway.com
+
+    TripSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        origin:
+          type: string
+          example: Zaragoza
+        destination:
+          type: string
+          example: Madrid
+        dateTime:
+          type: string
+          format: date
+          example: "2026-12-01"
+
+    # ── ERRORS ──
     ErrorResponse:
       type: object
       properties:
         timestamp:
           type: string
           format: date-time
-          description: Error timestamp.
+          example: "2026-05-16T10:00:00"
         status:
           type: integer
-          format: int32
-          description: HTTP status code.
+          example: 404
         error:
           type: string
-          description: Short error label.
+          example: Not Found
         message:
           type: string
-          description: Detailed error message.
-      example:
-        timestamp: '2026-02-07T11:30:00'
-        status: 400
-        error: Bad Request
-        message: Validation error
-    InternalServerError:
-      allOf:
-        - $ref: '#/components/schemas/ErrorResponse'
-      example:
-        timestamp: '2026-02-07T11:30:00'
-        status: 500
-        error: Internal error
-        message: Internal server error
-    BadRequest:
-      allOf:
-        - $ref: '#/components/schemas/ErrorResponse'
-      example:
-        timestamp: '2026-02-07T11:30:00'
-        status: 400
-        error: Bad Request
-        message: Validation error
-    NotFound:
-      allOf:
-        - $ref: '#/components/schemas/ErrorResponse'
-      example:
-        timestamp: '2026-02-07T11:30:00'
-        status: 404
-        error: Not Found
-        message: Resource not found
+          example: Trip not found with id 999
+
+# ─────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────
+paths:
+
+  # ══════════════════════════════
+  # AUTH
+  # ══════════════════════════════
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar nuevo usuario
+      description: Crea una cuenta de usuario con rol USER y devuelve un token JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registro exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Datos de registro inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: El email ya está registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      description: Autentica al usuario y devuelve un token JWT con su rol.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Datos de login inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Credenciales incorrectas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ══════════════════════════════
+  # TRIPS
+  # ══════════════════════════════
+  /trips:
+    get:
+      tags: [Trips]
+      summary: Listar todos los viajes
+      description: Devuelve la lista completa de viajes. Requiere rol USER o ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de viajes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trip'
+        '403':
+          description: Sin autorización
+
+    post:
+      tags: [Trips]
+      summary: Crear un viaje
+      description: Crea un nuevo viaje. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripRequest'
+            example:
+              origin: Zaragoza
+              destination: Madrid
+              dateTime: "2026-12-01"
+              transportTypes: CAR
+              availableSeats: 3
+              price: 25
+              full: false
+      responses:
+        '201':
+          description: Viaje creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          description: Datos inválidos (origin o destination nulos, seats < 1, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+  /trips/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID del viaje
+        schema:
+          type: integer
+          format: int64
+          example: 1
+
+    get:
+      tags: [Trips]
+      summary: Obtener un viaje por ID
+      description: Devuelve los datos de un viaje concreto. Requiere rol USER o ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Viaje encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '404':
+          description: Viaje no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+    put:
+      tags: [Trips]
+      summary: Actualizar un viaje
+      description: Actualiza todos los campos de un viaje. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripRequest'
+      responses:
+        '200':
+          description: Viaje actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trip'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Viaje no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+    delete:
+      tags: [Trips]
+      summary: Eliminar un viaje
+      description: Elimina un viaje por su ID. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Viaje eliminado correctamente
+        '404':
+          description: Viaje no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+  # ══════════════════════════════
+  # RESERVATIONS
+  # ══════════════════════════════
+  /reservations:
+    get:
+      tags: [Reservations]
+      summary: Listar todas las reservas
+      description: Devuelve la lista completa de reservas. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de reservas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reservation'
+        '403':
+          description: Sin autorización
+
+    post:
+      tags: [Reservations]
+      summary: Crear una reserva
+      description: Crea una nueva reserva asociada a un usuario y un viaje. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+            example:
+              numberOfSeats: 2
+              reservationDate: "2026-05-16"
+              confirmed: false
+              comment: Necesito maletero
+              totalPrice: 50
+              user:
+                id: 2
+              trip:
+                id: 1
+      responses:
+        '200':
+          description: Reserva creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+  /reservations/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID de la reserva
+        schema:
+          type: integer
+          format: int64
+          example: 1
+
+    get:
+      tags: [Reservations]
+      summary: Obtener una reserva por ID
+      description: Devuelve los datos de una reserva. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Reserva encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '404':
+          description: Reserva no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+    put:
+      tags: [Reservations]
+      summary: Actualizar una reserva
+      description: Actualiza todos los campos de una reserva. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationRequest'
+      responses:
+        '200':
+          description: Reserva actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Reserva no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+    delete:
+      tags: [Reservations]
+      summary: Eliminar una reserva
+      description: Elimina una reserva por su ID. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Reserva eliminada correctamente
+        '404':
+          description: Reserva no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+  # ══════════════════════════════
+  # USERS
+  # ══════════════════════════════
+  /users:
+    get:
+      tags: [Users]
+      summary: Listar todos los usuarios
+      description: Devuelve la lista completa de usuarios. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '403':
+          description: Sin autorización
+
+    post:
+      tags: [Users]
+      summary: Crear un usuario
+      description: Crea un nuevo usuario. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '201':
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID del usuario
+        schema:
+          type: integer
+          format: int64
+          example: 1
+
+    get:
+      tags: [Users]
+      summary: Obtener un usuario por ID
+      description: Devuelve los datos de un usuario. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+    put:
+      tags: [Users]
+      summary: Actualizar un usuario
+      description: Actualiza todos los campos de un usuario. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+    delete:
+      tags: [Users]
+      summary: Eliminar un usuario
+      description: Elimina un usuario por su ID. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Usuario eliminado correctamente
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+  /users/email/{email}:
+    get:
+      tags: [Users]
+      summary: Obtener usuario por email
+      description: Busca un usuario por su dirección de email. Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email del usuario
+          schema:
+            type: string
+            format: email
+            example: borja@shareway.com
+      responses:
+        '200':
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Sin autorización
+
+  /users/search:
+    get:
+      tags: [Users]
+      summary: Buscar usuarios por nombre
+      description: Devuelve usuarios cuyo nombre contenga el texto indicado (case-insensitive). Requiere rol ADMIN.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: Texto a buscar en el nombre
+          schema:
+            type: string
+            example: borja
+      responses:
+        '200':
+          description: Lista de usuarios que coinciden
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '403':
+          description: Sin autorización
