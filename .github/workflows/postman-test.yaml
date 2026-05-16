@@ -83,11 +83,11 @@ jobs:
           path: postman/results/
 
       - name: Deploy en EC2
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@master
         with:
           host: 52.70.109.66
           username: ${{ secrets.EC2_USERNAME }}
-          password: ${{ secrets.EC2_PASSWORD }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/app
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
